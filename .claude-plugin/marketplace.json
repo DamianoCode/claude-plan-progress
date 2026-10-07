@@ -1,0 +1,13 @@
+{
+  "name": "claude-plan-progress",
+  "description": "Plan progress band for Claude Code",
+  "owner": {
+    "name": "Damian Ułaś"
+  },
+  "plugins": [
+    {
+      "name": "plan-progress",
+      "source": "./"
+    }
+  ]
+}
