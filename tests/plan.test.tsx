@@ -1,9 +1,17 @@
+import type { On } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
 
 const BAND = {
   component: 'AbovePrompt',
   props: { hasSurvey: false, isWorking: true, maxRows: 20, bodyColumns: 60, scroll: { offset: 0, bodyRows: 19 }, view: {} },
 } as const
+
+// The engine's own band beneath the plugin.
+const engineBand = (on: On) =>
+  on('ui.render', { component: 'AbovePrompt' }, ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
 
 const todos = [
   { content: 'Zbadaj kod', activeForm: 'Badam kod', status: 'completed' },
@@ -14,10 +22,7 @@ const todos = [
 
 test('TodoWrite shows the current step and the share done', async ($, on) => {
   on('tool.call', { tool: 'TodoWrite' }, (_, e) => ({ result: { oldTodos: [], newTodos: [...e.todos] } }))
-  on('ui.render', { component: 'AbovePrompt' }, ($, e) => {
-    const { Text } = $.ui.resolve(e)
-    return <Text>engine</Text>
-  })
+  engineBand(on)
   await $.tool.call({ tool: 'TodoWrite', todos: [...todos] })
 
   for (const surface of ['terminal', 'desktop'] as const) {
@@ -34,6 +39,7 @@ test('TodoWrite shows the current step and the share done', async ($, on) => {
 })
 
 test('TaskCreate and TaskUpdate build the plan', async ($, on) => {
+  engineBand(on)
   let n = 0
   on('tool.call', { tool: 'TaskCreate' }, (_, e) => ({ result: { task: { id: String(++n), subject: e.subject } } }))
   on('tool.call', { tool: 'TaskUpdate' }, (_, e) => ({ result: { success: true, taskId: e.taskId, updatedFields: ['status'] } }))
@@ -47,7 +53,8 @@ test('TaskCreate and TaskUpdate build the plan', async ($, on) => {
   expect(await ui.find({ type: 'Text', text: /50%/ })).toBeDefined()
 })
 
-test('the mod\'s own plan tool drives the band', async $ => {
+test('the mod\'s own plan tool drives the band', async ($, on) => {
+  engineBand(on)
   await $.tool.call({
     tool: 'mcp__plan-progress__plan',
     steps: [
@@ -62,7 +69,8 @@ test('the mod\'s own plan tool drives the band', async $ => {
   expect(await ui.find({ type: 'Text', text: /33%/ })).toBeDefined()
 })
 
-test('the list expands to every step and collapses again', async $ => {
+test('the list expands to every step and collapses again', async ($, on) => {
+  engineBand(on)
   await $.tool.call({
     tool: 'mcp__plan-progress__plan',
     steps: [
