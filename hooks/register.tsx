@@ -149,6 +149,8 @@ export const register: Register = on => {
       return next(e)
     }
 
+    // Whatever the hooks beneath draw (another band, the engine's own) stays, below the plan.
+    const beneath = await next(e)
     const { Box, Text, Button } = $.ui.resolve(e)
     const total = p.steps.length
     const done = p.steps.filter(s => s.status === 'completed').length
@@ -173,46 +175,49 @@ export const register: Register = on => {
     const expanded = await read($, isExpanded)
 
     return (
-      <Box flexDirection="column" paddingX={PAD} paddingTop={1}>
-        <Box>
-          <Text color="claude" bold>◆ plan </Text>
-          <Text bold>etap {stage} </Text>
-          <Text dimColor>· </Text>
-          <Text wrap="truncate-end">{label}</Text>
-          <Box flexGrow={1} />
-          <Text color={tone} bold> {pct}% </Text>
-          <Button
-            key="toggle"
-            label={expanded ? 'Zwiń' : 'Lista'}
-            onPress={() => update($, isExpanded, x => !x)}
-          />
-          <Text> </Text>
-          <Button key="hide" label="Ukryj" onPress={() => update($, isHidden, () => true)} />
-        </Box>
-        <Box>
-          <Text color={tone}>{full}</Text>
-          <Text color="subtle">{empty}</Text>
-        </Box>
-        {expanded ? (
-          <Box flexDirection="column" paddingTop={1}>
-            {p.steps.map((step, i) => (
-              <Box key={`step-${step.id}`}>
-                <Text color={step.status === 'completed' ? 'success' : step.status === 'in_progress' ? 'claude' : 'inactive'}>
-                  {step.status === 'completed' ? ' ✓ ' : step.status === 'in_progress' ? ' ▶ ' : ' ○ '}
-                </Text>
-                <Text dimColor>{String(i + 1).padStart(String(total).length)}. </Text>
-                <Text
-                  wrap="truncate-end"
-                  bold={step.status === 'in_progress'}
-                  dimColor={step.status === 'completed'}
-                  color={step.status === 'pending' ? 'inactive' : undefined}
-                >
-                  {step.status === 'in_progress' ? step.active : step.title}
-                </Text>
-              </Box>
-            ))}
+      <Box flexDirection="column">
+        <Box flexDirection="column" paddingX={PAD} paddingTop={1}>
+          <Box>
+            <Text color="claude" bold>◆ plan </Text>
+            <Text bold>etap {stage} </Text>
+            <Text dimColor>· </Text>
+            <Text wrap="truncate-end">{label}</Text>
+            <Box flexGrow={1} />
+            <Text color={tone} bold> {pct}% </Text>
+            <Button
+              key="toggle"
+              label={expanded ? 'Zwiń' : 'Lista'}
+              onPress={() => update($, isExpanded, x => !x)}
+            />
+            <Text> </Text>
+            <Button key="hide" label="Ukryj" onPress={() => update($, isHidden, () => true)} />
           </Box>
-        ) : null}
+          <Box>
+            <Text color={tone}>{full}</Text>
+            <Text color="subtle">{empty}</Text>
+          </Box>
+          {expanded ? (
+            <Box flexDirection="column" paddingTop={1}>
+              {p.steps.map((step, i) => (
+                <Box key={`step-${step.id}`}>
+                  <Text color={step.status === 'completed' ? 'success' : step.status === 'in_progress' ? 'claude' : 'inactive'}>
+                    {step.status === 'completed' ? ' ✓ ' : step.status === 'in_progress' ? ' ▶ ' : ' ○ '}
+                  </Text>
+                  <Text dimColor>{String(i + 1).padStart(String(total).length)}. </Text>
+                  <Text
+                    wrap="truncate-end"
+                    bold={step.status === 'in_progress'}
+                    dimColor={step.status === 'completed'}
+                    color={step.status === 'pending' ? 'inactive' : undefined}
+                  >
+                    {step.status === 'in_progress' ? step.active : step.title}
+                  </Text>
+                </Box>
+              ))}
+            </Box>
+          ) : null}
+        </Box>
+        {beneath}
       </Box>
     )
   })

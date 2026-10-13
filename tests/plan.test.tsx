@@ -25,6 +25,7 @@ test('TodoWrite shows the current step and the share done', async ($, on) => {
     expect(await ui.find({ type: 'Text', text: /etap 2\/4/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /Piszę moda/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /25%/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'engine' })).toBeDefined()
     await ui.press({ key: 'hide' })
     expect(await ui.find({ type: 'Text', text: /etap/ })).toBeUndefined()
     await ui.unmount()
